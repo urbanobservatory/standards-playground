@@ -1,0 +1,31 @@
+{
+  "@context": {
+    "@version": 1.1,
+
+    "dc": "http://purl.org/dc/terms/title/",
+    "brick": "http://www.linked.data.gov.au/def/pylode/brick.html#",
+    "sosa": "http://www.w3.org/ns/sosa/",
+
+    "title": "dc:title",
+    "description": "dc:description",
+    "identifier": "dc:identifier",
+
+    "FeatureOfInterest": "sosa:FeatureOfInterest",
+    "Room": "brick:Room",
+    "Zone": "brick:Zone",
+
+    "hasPart": {
+      "@id": "brick:hasPart",
+      "@container": "@id"
+    },
+    "isPartOf": {
+      "@id": "brick:isPartOf",
+      "@type": "@id"
+    },
+
+    "isFeatureOfInterestOf": {
+      "@id": "sosa:isFeatureOfInterestOf",
+      "@container": "@id"
+    }
+  }
+}

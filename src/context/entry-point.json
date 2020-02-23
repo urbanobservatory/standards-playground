@@ -1,0 +1,16 @@
+{
+  "@context": {
+    "@version": 1.1,
+
+    "uo": "https://urbanobservatory.github.io/standards/vocabulary/latest/",
+    "dc": "http://purl.org/dc/terms/title/",
+    "title": "dc:title",
+    "description": "dc:description",
+    "Collection": "uo:Collection",
+    "collections": {
+      "@id": "uo:EntrypointCollections",
+      "@container": "@list",
+      "@type": "@id"
+    }
+  }
+}

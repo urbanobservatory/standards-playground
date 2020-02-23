@@ -1,0 +1,39 @@
+{
+  "@context": {
+    "@version": 1.1,
+
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "uo": "https://urbanobservatory.github.io/standards/vocabulary#",
+    "sosa": "http://www.w3.org/ns/sosa/",
+    "hydra": "http://www.w3.org/ns/hydra/core#",
+    "dc": "http://purl.org/dc/terms/title/",
+
+    "title": "dc:title",
+    "description": "dc:description",
+
+    "Container": "rdfs:Container",
+
+    "member": {
+      "@id": "uo:hasMember",
+      "@container": "@id"
+    },
+    "memberOf": {
+      "@id": "uo:isMemberOf",
+      "@container": "@list",
+      "@type": "@id"
+    },
+
+    "meta": "uo:meta",
+    "current": "uo:currentPage",
+    "next": "uo:nextPage",
+
+    "Collection": "uo:Collection",
+    "CollectionPartialView": "uo:CollectionPartialView",
+    "CollectionMeta": "uo:CollectionMeta",
+    "CollectionPointer": "uo:CollectionPointer",
+
+    "limit": "hydra:limit",
+    "offset": "hydra:offset"
+  }
+}

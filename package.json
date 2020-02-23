@@ -1,0 +1,17 @@
+{
+  "name": "standards-playground",
+  "version": "0.1.0",
+  "description": "API development playground for for JSON-LD and JSON Hyper-Schema with Urban Observatories",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Luke Smith <luke.smith@ncl.ac.uk> (http://smith.ac/)",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "express": "^4.17.1",
+    "isomorphic-fetch": "^2.2.1",
+    "ws": "^7.2.1"
+  }
+}

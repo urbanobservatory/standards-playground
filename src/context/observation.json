@@ -1,0 +1,33 @@
+{
+  "@context": {
+    "@version": 1.1,
+
+    "uo": "https://urbanobservatory.github.io/standards/vocabulary/latest/",
+    "ssn": "http://www.w3.org/ns/ssn/",
+    "sosa": "http://www.w3.org/ns/sosa/",
+
+    "Collection": "uo:Collection",
+    "Platform": "sosa:Platform",
+    "Sensor": "sosa:Sensor",
+    "Observation": "sosa:Observation",
+    "ObservationCollection": "ssn-ext:ObservationCollection",
+    "Result": "sosa:Result",
+    "FeatureOfInterest": "sosa:FeatureOfInterest",
+
+    "madeObservation": "sosa:madeObservation",
+    "resultTime": "sosa:resultTime",
+    "observes": "sosa:observes",
+    "hasResult": "sosa:hasResult",
+    "isHostedBy": "sosa:isHostedBy",
+    "hasFeatureOfInterest": {
+      "@id": "sosa:hasFeatureOfInterest",
+      "@type": "@id"
+    },
+    "madeBySensor": {
+      "@id": "sosa:madeBySensor",
+      "@type": "@id"
+    },
+
+    "observedProperty": "sosa:observedProperty"
+  }
+}

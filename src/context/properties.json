@@ -1,0 +1,11 @@
+{
+  "@context": {
+    "@version": 1.1,
+
+    "uo-props": "https://urbanobservatory.github.io/standards/properties/latest/",
+
+    "AirTemperature": "uo-props:AirTemperature",
+    "RelativeHumidity": "uo-props:RelativeHumidity",
+    "CO2Concentration": "uo-props:CO2Concentration"
+  }
+}
