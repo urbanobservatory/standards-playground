@@ -1,0 +1,26 @@
+version: "3"
+
+networks:
+  web:
+    external: true
+
+services:
+  node_playground:
+    container_name: node-playground
+    build: ./
+    restart: unless-stopped
+    networks:
+       - web
+    labels:
+      - "traefik.enable=true"
+      - "traefik.port=8080"
+      - "traefik.frontend.rule=Host:playground.dev.urbanobservatory.ac.uk"
+    environment:
+      - BASE=https://playground.dev.urbanobservatory.ac.uk/api/
+    logging:
+      driver: json-file
+      options:
+        max-size: '1024k'
+        max-file: '10'
+    volumes:
+      - ./:/app
