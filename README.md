@@ -3,6 +3,10 @@
 This is a **proof of concept** demonstration for mixing JSON-LD and JSON Hyper-Schema for different purposes, within
 the Urban Observatory standards.
 
+
+## Domains
+ - https://playground.dev.urbanobservatory.ac.uk [**DEV**]
+
 ## Getting started...
 
 You'll need a recent version of NodeJS that understands ES6 syntax, and a modern browser that understands async/await
