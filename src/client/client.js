@@ -1,10 +1,12 @@
 let codeArea = null;
+let schemaArea = null;
 
 window.addEventListener('load', () => {
   console.info('Client file loaded.');
 
   // Store DOM elements to output and dump controls in
   codeArea = document.getElementById('json-output');
+  schemaArea = document.getElementById('controls');
 
   loadFragment();
 });
@@ -28,24 +30,37 @@ function loadFragment () {
 
 async function loadDocument(iri) {
   let queryResponse = null;
+  let querySchema = null;
 
   try {
-    queryResponse = await jsonld.get(
+    queryResponse = await fetch(
       iri.indexOf('//') < 0 ? window.location.origin + iri : iri,
       {}
     );
+
+    const contentType = queryResponse.headers.get('Content-Type');
+
+    // This is not a good approach, it's hacky and it will definitely not work in all cases
+    // TODO: Improve this by properly parsing the Content-Type header for all valid options
+    if (contentType.toLowerCase().indexOf('schema-instance') >= 0) {
+      querySchema = contentType.match(/schema="([^"]+)"/)[1] || null;
+    }
+
+    queryResponse = await queryResponse.json();
   } catch (e) {
     return e.message;
   }
 
-  const context = queryResponse.document['@context'];
+  const context = queryResponse['@context'];
+
+  await loadSchema(querySchema, queryResponse);
 
   // Just return it as is, if it's not a JSON-LD document
   if (!context || !context.length) {
-    return queryResponse.document;
+    return queryResponse;
   }
 
-  const expansion = await jsonld.expand(queryResponse.document, {
+  const expansion = await jsonld.expand(queryResponse, {
     base: window.location.origin
   });
 
@@ -70,6 +85,53 @@ async function loadDocument(iri) {
   );
 
   return await jsonld.compact(expansion, baselessContext);
+}
+
+async function loadSchema(schemaIri, document) {
+  if (!schemaArea) return;
+
+  if (!schemaIri) {
+    schemaArea.innerHTML = 'Response is not a schema instance.';
+    return;
+  }
+
+  schemaArea.innerHTML = 'Response is described by schema "<code>' + schemaIri + '</code>".';
+
+  const schemaRoot = await walkFetchSchema(schemaIri);
+  schemaArea.innerHTML += '<pre>' + JSON.stringify(schemaRoot, null, 2) + '</pre>';
+}
+
+async function walkFetchSchema(schemaIri) {
+  const schemaRoot = await (await fetch(schemaIri)).json();
+  const schemaRefs = [];
+  const walk = (parent, key, depth = 1) => {
+    console.log(key);
+    if (parent[key] === Object(parent[key])) {
+      Object
+        .getOwnPropertyNames(parent[key])
+        .forEach(k => walk(parent[key], k, depth + 1));
+    } else {
+      if (key === '$ref') {
+        schemaRefs.push({
+          parent,
+          key,
+          pointer: parent[key]
+        });
+      }
+    }
+  };
+
+  Object
+    .getOwnPropertyNames(schemaRoot)
+    .forEach(k => walk(schemaRoot, k));
+
+  console.log(schemaRefs);
+
+  for await (let reference of schemaRefs) {
+    console.log(reference.pointer);
+  }
+
+  return schemaRoot;
 }
 
 async function renderDocument(iri) {

@@ -27,6 +27,7 @@
     "meta": "uo:meta",
     "current": "uo:currentPage",
     "next": "uo:nextPage",
+    "prev": "uo:prevPage",
 
     "Collection": "uo:Collection",
     "CollectionPartialView": "uo:CollectionPartialView",

@@ -29,9 +29,14 @@ function registerStatic(app) {
   // Allow access to the client files for browsers and context JSON files
   app.use('/', express.static(path.join(__dirname, 'client'), { index: 'index.htm' }));
   app.use('/api/context', express.static(path.join(__dirname, 'context')));
+  app.use('/api/schema', express.static(path.join(__dirname, 'schema'), {
+    setHeaders: (res, path, stat) => {
+      res.set('Content-Type', 'application/schema+json')
+    }
+  }));
 }
 
 module.exports = {
-  registerEndpoints,
-  registerStatic
+  registerStatic,
+  registerEndpoints
 };

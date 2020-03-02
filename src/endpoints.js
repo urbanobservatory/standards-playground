@@ -41,9 +41,13 @@ function getRoomCollection(req, res) {
   };
   const filters = {}; // TODO: Support filters per https://github.com/urbanobservatory/standards/issues/18
 
+  // Send a response that includes a pointer to the schema for collection responses
   res
     .status(200)
-    .json({
+    .set({
+      'Content-Type': 'application/schema-instance+json; charset=utf-8; schema="/api/schema/Collection.json"',
+    })
+    .send(Buffer.from(JSON.stringify({
       '@context': [
         { '@base': apiBase },
         '/api/context/collection.json',
@@ -58,7 +62,7 @@ function getRoomCollection(req, res) {
         pageLimit: pagination.limit,
         member: connector.getFilteredRooms(pagination, filters)
       })
-    });
+    }), 'utf-8'));
 }
 
 function getRoomIndividual(req, res) {

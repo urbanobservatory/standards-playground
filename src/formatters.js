@@ -16,6 +16,14 @@ const collection = (elements) => ({
       '@type': 'CollectionPointer',
       'offset': elements.pageOffset,
       'limit': elements.pageLimit
+    },
+    'prev': {
+      '@type': 'CollectionPointer',
+      'offset': elements.pageOffset - elements.pageLimit
+    },
+    'next': {
+      '@type': 'CollectionPointer',
+      'offset': elements.pageOffset + elements.pageLimit
     }
   }
 });
