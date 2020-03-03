@@ -1,12 +1,14 @@
 let codeArea = null;
 let schemaArea = null;
+let controlArea = null;
 
 window.addEventListener('load', () => {
   console.info('Client file loaded.');
 
   // Store DOM elements to output and dump controls in
   codeArea = document.getElementById('json-output');
-  schemaArea = document.getElementById('controls');
+  controlArea = document.getElementById('controls');
+  schemaArea = document.getElementById('schema-output');
 
   loadFragment();
 });
@@ -87,7 +89,7 @@ async function loadDocument(iri) {
   return await jsonld.compact(expansion, baselessContext);
 }
 
-async function loadSchema(schemaIri, document) {
+async function loadSchema(schemaIri, doc) {
   if (!schemaArea) return;
 
   if (!schemaIri) {
@@ -99,13 +101,133 @@ async function loadSchema(schemaIri, document) {
 
   const schemaRoot = await walkFetchSchema(schemaIri);
   schemaArea.innerHTML += '<pre>' + JSON.stringify(schemaRoot, null, 2) + '</pre>';
+
+  // Generate some control buttons for each of the links
+  controlArea.innerHTML = '';
+  controlArea.appendChild(
+    walkLinks(schemaRoot, doc)
+  );
 }
 
-async function walkFetchSchema(schemaIri) {
+function walkLinks(schema, doc) {
+  const controlContainer = document.createElement('div');
+  controlContainer.id = 'control-buttons';
+  controlContainer.className = 'control-buttons';
+
+  // Walk the schema and find all the link definitions...
+  const links = [];
+
+  const isIterable = k => ['allOf', 'oneOf'].indexOf(k) >= 0;
+
+  const walk = (parent) => {
+    Object
+      .getOwnPropertyNames(parent)
+      .forEach(k => {
+        if (k === 'links') {
+          links.push(...parent[k]);
+        }
+      });
+
+    if (parent === Object(parent)) {
+      Object
+        .getOwnPropertyNames(parent)
+        .forEach(k => {
+          if (isIterable(k)) {
+            parent[k].forEach((sub, idx) => walk(sub));
+          }
+        });
+    }
+  };
+  walk(schema);
+
+  // Generate a button for each link identified
+  links.forEach(
+    l => {
+      const button = document.createElement('button');
+      button.className = 'control-button';
+      button.innerHTML = l.rel;
+
+      controlContainer.appendChild(button);
+      button.addEventListener('click', e => {
+        activateLink(schema, doc, l);
+      });
+    }
+  );
+
+  return controlContainer;
+}
+
+function activateLink(schema, doc, link) {
+  console.log('Should now be activating the link...', link);
+
+  const {templatePointers, href} = link;
+  const templateData = {};
+
+  // Resolve pointers within the document
+  Object
+    .keys(templatePointers)
+    .forEach(
+      pointer => {
+        templateData[pointer] = resolvePointer(doc, templatePointers[pointer]);
+      }
+    );
+
+  // Should check the template data against the schema and disable any link
+  // that doesn't validate (like negative offsets in pagination)
+  // TODO: Validate the pointer references against their schema
+
+  // Build a valid IRI
+  // TODO: These can get fairly complex, need to cover all of the scenarios in the Hyper-Schema standard
+  // This will undoubtedly break for many cases, but it's a demo...
+  const hrefFilled = link.href.replace(
+    /{([^\{]+)}/,
+    // Get the groups surrounded by curly braces
+    (substitutionGroup, idx) => {
+      if (idx === 0) return ''; // Skip the all match
+
+      // Get the contents of the braces that aren't special URL characters
+      return substitutionGroup
+        .replace(
+          /[a-z0-9,]+/gi,
+          substitution =>
+            substitution
+              .split(',')
+              .map(parameter => {
+                return parameter + '=' + templateData[parameter];
+              })
+              .join('&')
+        );
+    }
+  ).replace(/[{}]/g, ''); // Strip the braces at the end
+
+  // TODO: Use the URL and URL search params to build this address properly
+  const currentLocation = window.location.toString().replace(/\?(.*)$/, '');
+  window.location.hash = currentLocation.replace(window.location.origin + '/#', '') + hrefFilled;
+}
+
+function resolvePointer(document, pointer) {
+  const path = pointer.split('/');
+
+  // TODO: Handle relative pointers in addition to absolute pointers
+  let cursor = document;
+  path.forEach(
+    p => {
+      if (typeof cursor[p] === 'undefined') {
+        return;
+      }
+
+      cursor = cursor[p]
+    }
+  );
+
+  return cursor;
+}
+
+async function walkFetchSchema(schemaIri, baseIri) {
+  const schemaUrl = new URL(schemaIri, baseIri || document.baseURI);
   const schemaRoot = await (await fetch(schemaIri)).json();
   const schemaRefs = [];
   const walk = (parent, key, depth = 1) => {
-    console.log(key);
     if (parent[key] === Object(parent[key])) {
       Object
         .getOwnPropertyNames(parent[key])
@@ -115,7 +237,9 @@ async function walkFetchSchema(schemaIri) {
         schemaRefs.push({
           parent,
           key,
-          pointer: parent[key]
+          pointer: parent[key],
+          fragment: parent[key].match(/#(.*)$/) || null,
+          path: parent[key].match(/([^#]+)(#|$)/)[1] || null
         });
       }
     }
@@ -125,10 +249,21 @@ async function walkFetchSchema(schemaIri) {
     .getOwnPropertyNames(schemaRoot)
     .forEach(k => walk(schemaRoot, k));
 
-  console.log(schemaRefs);
+  const loadedSchema = {};
+  for await (const {parent, key, pointer, fragment, path} of schemaRefs) {
+    const pointerUrl = new URL(path, schemaUrl).href;
 
-  for await (let reference of schemaRefs) {
-    console.log(reference.pointer);
+    // Ignore relative pointers in the same document for now, no loading required
+    // TODO: Transform pointers to the new base within the dereferenced document
+    if (pointer.substr(0, 1) === '#') continue;
+
+    if (!loadedSchema[pointerUrl]) {
+      console.log('Loading referenced schema', pointerUrl);
+      loadedSchema[pointerUrl] = await walkFetchSchema(pointerUrl);
+    }
+
+    delete parent[key];
+    Object.assign(parent, loadedSchema[pointerUrl]);
   }
 
   return schemaRoot;
