@@ -94,6 +94,7 @@ async function loadSchema(schemaIri, doc) {
 
   if (!schemaIri) {
     schemaArea.innerHTML = 'Response is not a schema instance.';
+    controlArea.innerHTML = 'No controls.';
     return;
   }
 
