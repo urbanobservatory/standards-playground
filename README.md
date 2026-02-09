@@ -1,3 +1,5 @@
+Archived on 09/02/2026 no longer running at https://playground.dev.urbanobservatory.ac.uk
+
 # API standards playround
 
 This is a **proof of concept** demonstration for mixing JSON-LD and JSON Hyper-Schema for different purposes, within
